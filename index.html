@@ -136,10 +136,9 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <script>
 const $ = id => document.getElementById(id);
 const search = $("search");
-
 let UNIT = localStorage.unit || "C";
 let THEME = localStorage.theme || "dark";
-let lastData = null;
+let lastData = JSON.parse(localStorage.getItem('lastData')) || null;
 
 // THEME
 function applyTheme(){
@@ -149,7 +148,7 @@ function applyTheme(){
   $("themeLabel").innerText = THEME.charAt(0).toUpperCase()+THEME.slice(1);
   localStorage.theme = THEME;
 }
-function toggleTheme(){THEME = THEME==="dark"?"light":THEME==="light"?"oled":"dark";applyTheme();}
+function toggleTheme(){ THEME = THEME==="dark"?"light":THEME==="light"?"oled":"dark"; applyTheme(); }
 applyTheme();
 
 // UNIT
@@ -176,6 +175,8 @@ function calculateUSAQI(pm){
 // APPLY DATA
 function applyData({w,a}){
   lastData={w,a};
+  localStorage.setItem('lastData', JSON.stringify(lastData));
+
   try{
     const t=w.hourly.temperature_2m[0];
     $("temp").innerText = toTemp(t);
@@ -193,8 +194,7 @@ function applyData({w,a}){
       const day=d.toLocaleDateString(undefined,{weekday:"short"});
       const minT=toTemp(w.daily.temperature_2m_min[i]);
       const maxT=toTemp(w.daily.temperature_2m_max[i]);
-      const icon="☀️";
-      $("forecast7").innerHTML += `<div class="card"><small>${day}</small><b>${minT} / ${maxT}</b><span class="forecast-icon">${icon}</span></div>`;
+      $("forecast7").innerHTML += `<div class="card"><small>${day}</small><b>${minT} / ${maxT}</b></div>`;
     }
 
     const rain24=w.hourly.precipitation.slice(0,24).reduce((a,b)=>a+b,0);
@@ -224,35 +224,44 @@ function applyData({w,a}){
     $("acAdvice").innerText = t>=35?"Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; General: fan+AC combo, night peak energy saving.":"AC not required, use fan if needed.";
 
     updateTimestamp();
-  } catch(e){console.error("Error applying data:",e);}
+  } catch(e){
+    console.error("Apply data error:",e);
+  }
 }
 
 // LOAD DATA
 async function load(lat, lon, name){
-  $("city").innerText = name;
+  $("city").innerText=name;
   try{
-    const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`).then(r=>r.json());
-    const aRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.json());
-    applyData({w:wRes,a:aRes});
-  } catch(e){ console.error("Failed to fetch data:",e); $("temp").innerText="Offline";}
+    const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`).then(r=>r.ok?r.json():Promise.reject("Weather API fail"));
+    const a=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.ok?r.json():Promise.reject("AQI API fail"));
+    applyData({w,a});
+  } catch(e){
+    console.warn("API fetch failed, using cached data or placeholders", e);
+    if(lastData) applyData(lastData);
+    else $("temp").innerText="--°C";
+  }
 }
 
 // GEOLOCATION
 function useMyLocation(){
-  navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"My Location"),()=>load(22.57,88.36,"Kolkata"));
+  navigator.geolocation.getCurrentPosition(
+    p=>load(p.coords.latitude,p.coords.longitude,"My Location"),
+    ()=>load(22.57,88.36,"Kolkata")
+  );
 }
 
 // SEARCH CITY
 async function searchCity(){
   if(!search.value) return;
   try{
-    const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json());
+    const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.ok?r.json():Promise.reject("Search fail"));
     if(g.results) load(g.results[0].latitude,g.results[0].longitude,g.results[0].name);
   } catch(e){console.error("Search failed",e);}
 }
 
 // FOOTER YEAR
-document.getElementById("year").innerText = new Date().getFullYear();
+document.getElementById("year").innerText=new Date().getFullYear();
 
 // SERVICE WORKER
 if('serviceWorker' in navigator){
