@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rituva Weather Pro</title>
-<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#000000">
+
 <style>
 :root{
 --bg:#000;
@@ -38,8 +38,8 @@ font-family:-apple-system,BlinkMacSystemFont,system-ui;
 transition:0.3s ease;
 }
 .app{max-width:430px;margin:auto;padding:18px;}
-h1{font-size:34px;margin-bottom:14px;}
-h2{font-size:22px;margin:28px 0 14px;}
+h1{font-size:34px;margin-bottom:14px}
+h2{font-size:22px;margin:28px 0 14px}
 button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radius:var(--radius);background:var(--soft);color:var(--text);font-size:16px;cursor:pointer;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .card{background:var(--card);padding:18px;border-radius:var(--radius);text-align:center;}
@@ -56,7 +56,7 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="app">
 <h1>🌦️ Rituva Pro</h1>
 
-<!-- THEME & UNIT TOGGLES -->
+<!-- THEME AND UNIT TOGGLES -->
 <button onclick="toggleTheme()">🎨 Theme: <span id="themeLabel">Dark</span></button>
 <button onclick="toggleUnit()">🌡 °C / °F</button>
 
@@ -124,17 +124,25 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card full"><small>Sunrise / Sunset</small><b id="sun">--</b></div>
 </div>
 
-<!-- LIFESTYLE & AC -->
+<!-- LIFESTYLE ADVICE -->
 <h2>🧘 Lifestyle Advice</h2>
 <div class="grid">
-<div class="card full"><small>Tips</small><b id="lifestyle">--</b></div>
+<div class="card full">
+<small>Tips</small>
+<b id="lifestyle">--</b>
 </div>
-<h2>❄ Smart AC Advice</h2>
-<div class="grid">
-<div class="card full"><small>AC Recommendations</small><b id="acAdvice">--</b></div>
 </div>
 
-<!-- LAST UPDATED -->
+<!-- SMART AC ADVICE -->
+<h2>❄ Smart AC Advice</h2>
+<div class="grid">
+<div class="card full">
+<small>AC Recommendations</small>
+<b id="acAdvice">--</b>
+</div>
+</div>
+
+<!-- DATA STATUS -->
 <h2>ℹ️ Data Status</h2>
 <div class="grid">
 <div class="card full"><small>Last Updated</small><b id="updated">--</b></div>
@@ -149,7 +157,6 @@ let UNIT=localStorage.unit||"C"
 let THEME=localStorage.theme||"dark"
 let lastData=null
 
-// THEME
 function applyTheme(){
 document.body.classList.remove("light","oled")
 if(THEME==="light")document.body.classList.add("light")
@@ -165,16 +172,25 @@ else THEME="dark"
 applyTheme()
 }
 
-// UNIT
-function toTemp(c){return UNIT==="C"? `${c.toFixed(1)}°C` : `${((c*9/5)+32).toFixed(1)}°F`}
-function toggleUnit(){UNIT=UNIT==="C"?"F":"C"; localStorage.unit=UNIT; if(lastData)applyData(lastData)}
+function toTemp(c){
+return UNIT==="C"? `${c.toFixed(1)}°C` : `${((c*9/5)+32).toFixed(1)}°F`
+}
+function toggleUnit(){
+UNIT=UNIT==="C"?"F":"C"
+localStorage.unit=UNIT
+if(lastData)applyData(lastData)
+}
 
-// TIMESTAMP & FOOTER
-function updateTimestamp(){$("updated").innerText=new Date().toLocaleString()}
-function updateFooter(){$("footer").innerText=`© Manik Roy ${new Date().getFullYear()}. All Rights Reserved.`}
+function updateTimestamp(){
+$("updated").innerText=new Date().toLocaleString()
+}
+
+function updateFooter(){
+const year=new Date().getFullYear()
+$("footer").innerText=`© Manik Roy ${year}. All Rights Reserved.`
+}
 updateFooter()
 
-// AQI
 function calculateUSAQI(pm){
 const b=[
 {cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},
@@ -184,11 +200,14 @@ const b=[
 {cL:150.5,cH:250.4,iL:201,iH:300,cat:"Very Unhealthy",col:"#8F3F97"},
 {cL:250.5,cH:500.4,iL:301,iH:500,cat:"Hazardous",col:"#7E0023"}
 ]
-for(let x of b){if(pm>=x.cL&&pm<=x.cH){const aqi=((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL; return{v:Math.round(aqi),cat:x.cat,col:x.col}}}
-return {v:500,cat:"Hazardous",col:"#7E0023"}
+for(let x of b){
+if(pm>=x.cL&&pm<=x.cH){
+const aqi=((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL
+return{v:Math.round(aqi),cat:x.cat,col:x.col}
+}}
+return{v:500,cat:"Hazardous",col:"#7E0023"}
 }
 
-// APPLY DATA
 function applyData({w,a}){
 try{
 const t=w.hourly.temperature_2m[0]
@@ -233,21 +252,23 @@ $("power").innerText=t>=35?"Peak Load":"Normal"
 $("sun").innerText=w.daily.sunrise[0].slice(11,16)+" / "+w.daily.sunset[0].slice(11,16)
 $("lifestyle").innerText=t>=35?"Stay hydrated, limit outdoor activity, use sunscreen. AQI may require mask.":"Normal outdoor activity. Keep hydrated."
 $("acAdvice").innerText=t>=35?"Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; General: fan+AC combo, night peak energy saving.":"AC not required, use fan if needed."
+
 updateTimestamp()
-}catch(e){console.error("Apply data error:",e)}
+}catch(e){
+console.error("Apply data error:",e)
+}
 }
 
-// LOAD WEATHER
 async function load(lat, lon, name){
 $("city").innerText=name
 try{
-const wResp=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`)
-const aResp=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`)
+const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`);
+const aResp = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`);
 if(!wResp.ok || !aResp.ok) throw new Error("API fetch failed")
-const w=await wResp.json()
-const a=await aResp.json()
-lastData={w,a}
-applyData(lastData)
+const w = await wResp.json();
+const a = await aResp.json();
+lastData={w,a};
+applyData(lastData);
 }catch(err){
 console.error("Weather load error:",err)
 $("temp").innerText="--°C"
@@ -278,14 +299,20 @@ updateTimestamp()
 }
 }
 
-// GEOLOCATION & SEARCH
-function useMyLocation(){navigator.geolocation.getCurrentPosition(p=>load(p.coords.latitude,p.coords.longitude,"My Location"),()=>load(22.57,88.36,"Kolkata"))}
-async function searchCity(){if(!search.value)return; const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json()); if(g.results)load(g.results[0].latitude,g.results[0].longitude,g.results[0].name)}
+function useMyLocation(){
+navigator.geolocation.getCurrentPosition(
+p=>load(p.coords.latitude,p.coords.longitude,"My Location"),
+()=>load(22.57,88.36,"Kolkata")
+)
+}
+
+async function searchCity(){
+if(!search.value)return
+const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json())
+if(g.results)load(g.results[0].latitude,g.results[0].longitude,g.results[0].name)
+}
 
 useMyLocation()
-
-// SERVICE WORKER
-if('serviceWorker' in navigator){navigator.serviceWorker.register("./sw.js").then(()=>console.log("Service Worker Registered")).catch(e=>console.error("SW failed:",e))}
 </script>
 </body>
 </html>
