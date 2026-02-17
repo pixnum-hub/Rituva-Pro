@@ -134,9 +134,9 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </div>
 
 <script>
-// SHORTCUTS
 const $ = id => document.getElementById(id);
 const search = $("search");
+
 let UNIT = localStorage.unit || "C";
 let THEME = localStorage.theme || "dark";
 let lastData = null;
@@ -224,7 +224,7 @@ function applyData({w,a}){
     $("acAdvice").innerText = t>=35?"Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; General: fan+AC combo, night peak energy saving.":"AC not required, use fan if needed.";
 
     updateTimestamp();
-  } catch(e){ console.error("Error applying data:",e);}
+  } catch(e){console.error("Error applying data:",e);}
 }
 
 // LOAD DATA
