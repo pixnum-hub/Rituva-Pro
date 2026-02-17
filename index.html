@@ -15,6 +15,7 @@
 --muted:#9a9a9a;
 --radius:26px;
 }
+
 .light{
 --bg:#f4f6f8;
 --card:#fff;
@@ -22,6 +23,7 @@
 --text:#111;
 --muted:#666;
 }
+
 .oled{
 --bg:#000;
 --card:#000;
@@ -29,6 +31,7 @@
 --text:#fff;
 --muted:#777;
 }
+
 *{box-sizing:border-box;}
 body{
 margin:0;
@@ -40,7 +43,7 @@ transition:0.3s ease;
 .app{max-width:430px;margin:auto;padding:18px;}
 h1{font-size:34px;margin-bottom:14px}
 h2{font-size:22px;margin:28px 0 14px}
-button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radius:var(--radius);background:var(--soft);color:var(--text);font-size:16px;cursor:pointer;}
+button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radius:var(--radius);background:var(--soft);color:var(--text);font-size:16px;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
 .card{background:var(--card);padding:18px;border-radius:var(--radius);text-align:center;}
 .card small{color:var(--muted);display:block;}
@@ -52,6 +55,7 @@ button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radiu
 footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </style>
 </head>
+
 <body>
 <div class="app">
 <h1>🌦️ Rituva Pro</h1>
@@ -148,7 +152,7 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card full"><small>Last Updated</small><b id="updated">--</b></div>
 </div>
 
-<footer id="footer"></footer>
+<footer>© Manik Roy 2025. All Rights Reserved.</footer>
 </div>
 
 <script>
@@ -185,12 +189,6 @@ function updateTimestamp(){
 $("updated").innerText=new Date().toLocaleString()
 }
 
-function updateFooter(){
-const year=new Date().getFullYear()
-$("footer").innerText=`© Manik Roy ${year}. All Rights Reserved.`
-}
-updateFooter()
-
 function calculateUSAQI(pm){
 const b=[
 {cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},
@@ -209,7 +207,6 @@ return{v:500,cat:"Hazardous",col:"#7E0023"}
 }
 
 function applyData({w,a}){
-try{
 const t=w.hourly.temperature_2m[0]
 $("temp").innerText=toTemp(t)
 $("tmin").innerText=toTemp(w.daily.temperature_2m_min[0])
@@ -250,52 +247,22 @@ $("night").innerText=t>=30?"Uncomfortable":"Normal"
 $("power").innerText=t>=35?"Peak Load":"Normal"
 
 $("sun").innerText=w.daily.sunrise[0].slice(11,16)+" / "+w.daily.sunset[0].slice(11,16)
+
 $("lifestyle").innerText=t>=35?"Stay hydrated, limit outdoor activity, use sunscreen. AQI may require mask.":"Normal outdoor activity. Keep hydrated."
 $("acAdvice").innerText=t>=35?"Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; General: fan+AC combo, night peak energy saving.":"AC not required, use fan if needed."
 
 updateTimestamp()
-}catch(e){
-console.error("Apply data error:",e)
-}
 }
 
-async function load(lat, lon, name){
+async function load(lat,lon,name){
 $("city").innerText=name
 try{
-const wResp = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`);
-const aResp = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`);
-if(!wResp.ok || !aResp.ok) throw new Error("API fetch failed")
-const w = await wResp.json();
-const a = await aResp.json();
-lastData={w,a};
-applyData(lastData);
-}catch(err){
-console.error("Weather load error:",err)
-$("temp").innerText="--°C"
-$("tmin").innerText="--"
-$("tmax").innerText="--"
-$("t24min").innerText="--"
-$("t24max").innerText="--"
-$("t7min").innerText="--"
-$("t7max").innerText="--"
-$("rain").innerText="--"
-$("rain24").innerText="--"
-$("rain7").innerText="--"
-$("flood").innerText="--"
-$("monsoon").innerText="--"
-$("cyclone").innerText="--"
-$("aqiValue").innerText="--"
-$("aqiCategory").innerText=""
-$("child").innerText="--"
-$("old").innerText="--"
-$("asthma").innerText="--"
-$("heat").innerText="--"
-$("night").innerText="--"
-$("power").innerText="--"
-$("sun").innerText="--"
-$("lifestyle").innerText="--"
-$("acAdvice").innerText="--"
-updateTimestamp()
+const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,sunrise,sunset&timezone=auto`).then(r=>r.json())
+const a=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.json())
+lastData={w,a}
+applyData(lastData)
+}catch{
+$("temp").innerText="Offline"
 }
 }
 
