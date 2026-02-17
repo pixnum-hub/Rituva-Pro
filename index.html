@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rituva Weather</title>
 <meta name="theme-color" content="#000000">
+<link rel="manifest" href="manifest.json">
 <style>
 :root{
 --bg:#000;--card:#1a1a1a;--soft:#222;--text:#fff;--muted:#9a9a9a;--radius:26px;
@@ -18,7 +19,7 @@
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,system-ui;transition:0.3s ease;}
 .app{max-width:430px;margin:auto;padding:18px;}
-h1{font-size:34px;margin-bottom:14px}
+h1{font-size:34px;margin-bottom:14px;text-align:center}
 h2{font-size:22px;margin:28px 0 14px}
 button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radius:var(--radius);background:var(--soft);color:var(--text);font-size:16px;}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
@@ -36,22 +37,18 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="app">
 <h1>🌦️ Rituva Pro</h1>
 
-<!-- THEME AND UNIT TOGGLES -->
-<button onclick="toggleTheme()">🎨 Theme: <span id="themeLabel">Dark</span></button>
+<button onclick="toggleTheme()">🌗 Theme: <span id="themeLabel">Dark</span></button>
 <button onclick="toggleUnit()">🌡 °C / °F</button>
 
-<!-- SEARCH -->
 <input id="search" placeholder="Search city" onkeydown="if(event.key==='Enter')searchCity()">
 <button onclick="searchCity()">Search</button>
 <button onclick="useMyLocation()">📍 Use My Location</button>
 
-<!-- MAIN TEMP -->
 <div class="hero">
 <small id="city">Loading...</small>
 <b id="temp">--°C</b>
 </div>
 
-<!-- TEMPERATURE -->
 <h2>🌡 Temperature</h2>
 <div class="grid">
 <div class="card"><small>Today Min</small><b id="tmin">--</b></div>
@@ -62,11 +59,9 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>7-Day Max</small><b id="t7max">--</b></div>
 </div>
 
-<!-- 7-DAY FORECAST -->
 <h2>📅 7-Day Forecast</h2>
 <div id="forecast7" class="grid"></div>
 
-<!-- RAIN & MONSOON -->
 <h2>🌧 Rain & Monsoon</h2>
 <div class="grid">
 <div class="card"><small>Hourly Rain</small><b id="rain">--</b></div>
@@ -77,7 +72,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>Cyclone Alert</small><b id="cyclone">--</b></div>
 </div>
 
-<!-- AIR QUALITY -->
 <h2>🌬 Air Quality</h2>
 <div class="grid">
 <div class="card full">
@@ -90,7 +84,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>Asthma</small><b id="asthma">--</b></div>
 </div>
 
-<!-- HEAT • NIGHT • POWER -->
 <h2>🔥 Heat • Night • Power</h2>
 <div class="grid">
 <div class="card"><small>Heatwave</small><b id="heat">--</b></div>
@@ -98,13 +91,11 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card full"><small>Power Demand</small><b id="power">--</b></div>
 </div>
 
-<!-- SUN -->
 <h2>🌅 Sun</h2>
 <div class="grid">
 <div class="card full"><small>Sunrise / Sunset</small><b id="sun">--</b></div>
 </div>
 
-<!-- LIFESTYLE ADVICE -->
 <h2>🧘 Lifestyle Advice</h2>
 <div class="grid">
 <div class="card full">
@@ -113,7 +104,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </div>
 </div>
 
-<!-- SMART AC ADVICE -->
 <h2>❄ Smart AC Advice</h2>
 <div class="grid">
 <div class="card full">
@@ -122,7 +112,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </div>
 </div>
 
-<!-- DATA STATUS -->
 <h2>ℹ️ Data Status</h2>
 <div class="grid">
 <div class="card full"><small>Last Updated</small><b id="updated">--</b></div>
@@ -132,133 +121,141 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </div>
 
 <script>
-const $=id=>document.getElementById(id)
-let UNIT=localStorage.unit||"C"
-let THEME=localStorage.theme||"dark"
-let lastData=null
+const $ = id => document.getElementById(id);
+const searchInput = $("search");
+let UNIT = localStorage.unit || "C";
+let THEME = localStorage.theme || "dark";
+let lastData = null;
 
+// THEME
 function applyTheme(){
-document.body.classList.remove("light","oled")
-if(THEME==="light")document.body.classList.add("light")
-if(THEME==="oled")document.body.classList.add("oled")
-$("themeLabel").innerText=THEME.charAt(0).toUpperCase()+THEME.slice(1)
-localStorage.theme=THEME
+    document.body.classList.remove("light","oled");
+    if(THEME==="light") document.body.classList.add("light");
+    if(THEME==="oled") document.body.classList.add("oled");
+    $("themeLabel").innerText = THEME.charAt(0).toUpperCase()+THEME.slice(1);
+    localStorage.theme = THEME;
 }
-applyTheme()
+applyTheme();
 function toggleTheme(){
-if(THEME==="dark")THEME="light"
-else if(THEME==="light")THEME="oled"
-else THEME="dark"
-applyTheme()
+    THEME = THEME==="dark"?"light":THEME==="light"?"oled":"dark";
+    applyTheme();
 }
 
-function toTemp(c){
-return UNIT==="C"? `${c.toFixed(1)}°C` : `${((c*9/5)+32).toFixed(1)}°F`
-}
-function toggleUnit(){
-UNIT=UNIT==="C"?"F":"C"
-localStorage.unit=UNIT
-if(lastData)applyData(lastData)
-}
+// UNIT
+function toTemp(c){ return UNIT==="C"?`${c.toFixed(1)}°C`:`${(c*9/5+32).toFixed(1)}°F`; }
+function toggleUnit(){ UNIT=UNIT==="C"?"F":"C"; localStorage.unit=UNIT; if(lastData) applyData(lastData); }
 
-function updateTimestamp(){
-$("updated").innerText=new Date().toLocaleString()
-}
+// TIMESTAMP
+function updateTimestamp(){ $("updated").innerText = new Date().toLocaleString(); }
 
+// AQI
 function calculateUSAQI(pm){
-const b=[
-{cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},
-{cL:12.1,cH:35.4,iL:51,iH:100,cat:"Moderate",col:"#FFFF00"},
-{cL:35.5,cH:55.4,iL:101,iH:150,cat:"Unhealthy for Sensitive Groups",col:"#FF7E00"},
-{cL:55.5,cH:150.4,iL:151,iH:200,cat:"Unhealthy",col:"#FF0000"},
-{cL:150.5,cH:250.4,iL:201,iH:300,cat:"Very Unhealthy",col:"#8F3F97"},
-{cL:250.5,cH:500.4,iL:301,iH:500,cat:"Hazardous",col:"#7E0023"}
-]
-for(let x of b){
-if(pm>=x.cL&&pm<=x.cH){
-const aqi=((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL
-return{v:Math.round(aqi),cat:x.cat,col:x.col}
-}}
-return{v:500,cat:"Hazardous",col:"#7E0023"}
+    const b=[{cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},{cL:12.1,cH:35.4,iL:51,iH:100,cat:"Moderate",col:"#FFFF00"},{cL:35.5,cH:55.4,iL:101,iH:150,cat:"Unhealthy for Sensitive Groups",col:"#FF7E00"},{cL:55.5,cH:150.4,iL:151,iH:200,cat:"Unhealthy",col:"#FF0000"},{cL:150.5,cH:250.4,iL:201,iH:300,cat:"Very Unhealthy",col:"#8F3F97"},{cL:250.5,cH:500.4,iL:301,iH:500,cat:"Hazardous",col:"#7E0023"}];
+    for(let x of b){if(pm>=x.cL && pm<=x.cH){return {v:Math.round(((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL), cat:x.cat, col:x.col};}}
+    return {v:500,cat:"Hazardous",col:"#7E0023"};
 }
 
+// CACHE
+function saveCache(data){ try{ localStorage.setItem("lastWeatherData",JSON.stringify(data)); } catch{} }
+function loadCache(){ try{ const d=localStorage.getItem("lastWeatherData"); return d?JSON.parse(d):null; } catch{return null;} }
+
+// APPLY DATA
 function applyData({w,a}){
-const t=w.hourly.temperature_2m[0]
-$("temp").innerText=toTemp(t)
-$("tmin").innerText=toTemp(w.daily.temperature_2m_min[0])
-$("tmax").innerText=toTemp(w.daily.temperature_2m_max[0])
-const t24=w.hourly.temperature_2m.slice(0,24)
-$("t24min").innerText=toTemp(Math.min(...t24))
-$("t24max").innerText=toTemp(Math.max(...t24))
-$("t7min").innerText=toTemp(Math.min(...w.daily.temperature_2m_min))
-$("t7max").innerText=toTemp(Math.max(...w.daily.temperature_2m_max))
+    lastData={w,a};
+    const t=w.hourly?.temperature_2m?.[0] ?? 0;
+    $("temp").innerText = toTemp(t);
+    $("tmin").innerText = toTemp(w.daily?.temperature_2m_min?.[0] ?? 0);
+    $("tmax").innerText = toTemp(w.daily?.temperature_2m_max?.[0] ?? 0);
 
-$("forecast7").innerHTML=""
-for(let i=0;i<7;i++){
-const d=new Date(w.daily.time[i])
-const day=d.toLocaleDateString(undefined,{weekday:"short"})
-$("forecast7").innerHTML+=`<div class="card"><small>${day}</small><b>${toTemp(w.daily.temperature_2m_min[i])} / ${toTemp(w.daily.temperature_2m_max[i])}</b></div>`
+    $("forecast7").innerHTML = (w.daily?.time ?? []).map((time,i)=>{
+        const d=new Date(time);
+        const day=d.toLocaleDateString(undefined,{weekday:"short"});
+        const min=w.daily.temperature_2m_min[i] ?? 0;
+        const max=w.daily.temperature_2m_max[i] ?? 0;
+        return `<div class="card"><small>${day}</small><b>${toTemp(min)} / ${toTemp(max)}</b></div>`;
+    }).join('');
+
+    const rain24=w.hourly?.precipitation?.slice(0,24).reduce((a,b)=>a+b,0) ?? 0;
+    $("rain").innerText = (w.hourly?.precipitation?.[0] ?? 0)+" mm";
+    $("rain24").innerText = rain24.toFixed(1)+" mm";
+    $("rain7").innerText = (rain24*3).toFixed(1)+" mm";
+    $("flood").innerText = Math.min(100,Math.round(rain24*2))+"%";
+    $("monsoon").innerText = rain24>60?"Extreme":rain24>30?"Strong":"Normal";
+    $("cyclone").innerText = rain24>120?"Alert":"None";
+
+    const pm=a.hourly?.pm2_5?.[0] ?? 0;
+    const aq=calculateUSAQI(pm);
+    $("aqiValue").innerText=aq.v; $("aqiValue").style.color=aq.col;
+    $("aqiCategory").innerText=aq.cat; $("aqiCategory").style.color=aq.col;
+    $("child").innerText=pm>35?"Sensitive Risk":"Low";
+    $("old").innerText=pm>35?"Elevated Risk":"Low";
+    $("asthma").innerText=pm>25?"High Risk":"Low";
+
+    $("heat").innerText=t>=40?"Severe":t>=35?"High":"Normal";
+    $("night").innerText=t>=30?"Uncomfortable":"Normal";
+    $("power").innerText=t>=35?"Peak Load":"Normal";
+
+    $("sun").innerText=(w.daily?.sunrise?.[0] ?? "--") + " / " + (w.daily?.sunset?.[0] ?? "--");
+
+    if(t>=35){
+        $("lifestyle").innerText="Stay hydrated, limit outdoor activity, use sunscreen. AQI may require mask.";
+        $("acAdvice").innerText="Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; Fan+AC combo, night saving.";
+    } else {
+        $("lifestyle").innerText="Normal outdoor activity. Keep hydrated.";
+        $("acAdvice").innerText="AC not required, use fan if needed.";
+    }
+
+    updateTimestamp();
 }
 
-const rain24=w.hourly.precipitation.slice(0,24).reduce((a,b)=>a+b,0)
-$("rain").innerText=w.hourly.precipitation[0].toFixed(1)+" mm"
-$("rain24").innerText=rain24.toFixed(1)+" mm"
-$("rain7").innerText=(rain24*3).toFixed(1)+" mm"
-$("flood").innerText=Math.min(100,Math.round(rain24*2))+"%"
-$("monsoon").innerText=rain24>60?"Extreme":rain24>30?"Strong":"Normal"
-$("cyclone").innerText=rain24>120?"Alert":"None"
-
-const pm=a.hourly.pm2_5[0]
-const aq=calculateUSAQI(pm)
-$("aqiValue").innerText=aq.v
-$("aqiValue").style.color=aq.col
-$("aqiCategory").innerText=aq.cat
-$("aqiCategory").style.color=aq.col
-$("child").innerText=pm>35?"Sensitive Risk":"Low"
-$("old").innerText=pm>35?"Elevated Risk":"Low"
-$("asthma").innerText=pm>25?"High Risk":"Low"
-
-$("heat").innerText=t>=40?"Severe":t>=35?"High":"Normal"
-$("night").innerText=t>=30?"Uncomfortable":"Normal"
-$("power").innerText=t>=35?"Peak Load":"Normal"
-
-$("sun").innerText=w.daily.sunrise[0].slice(11,16)+" / "+w.daily.sunset[0].slice(11,16)
-
-$("lifestyle").innerText=t>=35?"Stay hydrated, limit outdoor activity, use sunscreen. AQI may require mask.":"Normal outdoor activity. Keep hydrated."
-$("acAdvice").innerText=t>=35?"Split AC: 24–26°C, Dry mode; Window AC: 24–26°C, Dry; General: fan+AC combo, night peak energy saving.":"AC not required, use fan if needed."
-
-updateTimestamp()
-}
-
+// LOAD DATA
 async function load(lat,lon,name){
-$("city").innerText=name
-try{
-const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,sunrise,sunset&timezone=auto`).then(r=>r.json())
-const a=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.json())
-lastData={w,a}
-applyData(lastData)
-}catch{
-$("temp").innerText="Offline"
-}
+    $("city").innerText = name;
+    try{
+        const [w,a] = await Promise.allSettled([
+            fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`).then(r=>r.json()),
+            fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.json())
+        ]);
+        const data = { 
+            w: w.status==="fulfilled"? w.value : {hourly:{temperature_2m:[0],precipitation:[0]},daily:{temperature_2m_min:[0],temperature_2m_max:[0],time:[],sunrise:[],sunset:[]}}, 
+            a: a.status==="fulfilled"? a.value : {hourly:{pm2_5:[0]}} 
+        };
+        applyData(data); saveCache(data);
+    }catch(err){
+        console.error(err);
+        const cached=loadCache();
+        if(cached){applyData(cached); $("city").innerText+=" (Cached)"; }
+        else {$("temp").innerText="Offline"; $("forecast7").innerHTML="";}
+    }
 }
 
+// LOCATION
 function useMyLocation(){
-navigator.geolocation.getCurrentPosition(
-p=>load(p.coords.latitude,p.coords.longitude,"My Location"),
-()=>load(22.57,88.36,"Kolkata")
-)
+    navigator.geolocation.getCurrentPosition(
+        p=>load(p.coords.latitude,p.coords.longitude,"My Location"),
+        ()=>load(22.57,88.36,"Kolkata")
+    );
 }
 
+// SEARCH
 async function searchCity(){
-if(!search.value)return
-const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json())
-if(g.results)load(g.results[0].latitude,g.results[0].longitude,g.results[0].name)
+    if(!searchInput.value) return;
+    try{
+        const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${searchInput.value}&count=1`).then(r=>r.json());
+        if(g.results) load(g.results[0].latitude,g.results[0].longitude,g.results[0].name);
+    }catch(e){console.error(e);}
 }
 
-// Auto-update footer year
-document.getElementById("year").innerText = new Date().getFullYear();
+// FOOTER YEAR
+$("year").innerText = new Date().getFullYear();
 
-useMyLocation()
+// SERVICE WORKER
+if('serviceWorker' in navigator){
+    window.addEventListener('load',()=>{navigator.serviceWorker.register('./sw.js').catch(console.error);});
+}
+
+// INITIALIZE
+useMyLocation();
 </script>
 </body>
 </html>
