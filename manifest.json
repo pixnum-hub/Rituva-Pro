@@ -1,11 +1,11 @@
 {
   "name": "Rituva Weather",
   "short_name": "Rituva",
-  "description": "Real-time weather, AQI, monsoon & lifestyle advice",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
+  "description": "Indicative weather, AQI, lifestyle and AC advice for India.",
   "orientation": "portrait",
   "icons": [
     {
