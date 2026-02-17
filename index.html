@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rituva Weather Pro</title>
+<title>Rituva Weather</title>
 <meta name="theme-color" content="#000000">
 <link rel="manifest" href="manifest.json">
 <style>
@@ -30,7 +30,6 @@ button,input{width:100%;padding:16px;margin-bottom:10px;border:none;border-radiu
 .hero{text-align:center;margin:20px 0;}
 .hero small{color:var(--muted);}
 .hero b{font-size:82px;display:block;margin-top:10px;}
-.forecast-icon{font-size:28px;display:block;margin-top:6px;}
 footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 </style>
 </head>
@@ -192,9 +191,7 @@ function applyData({w,a}){
     for(let i=0;i<7;i++){
       const d=new Date(w.daily.time[i]);
       const day=d.toLocaleDateString(undefined,{weekday:"short"});
-      const minT=toTemp(w.daily.temperature_2m_min[i]);
-      const maxT=toTemp(w.daily.temperature_2m_max[i]);
-      $("forecast7").innerHTML += `<div class="card"><small>${day}</small><b>${minT} / ${maxT}</b></div>`;
+      $("forecast7").innerHTML += `<div class="card"><small>${day}</small><b>${toTemp(w.daily.temperature_2m_min[i])} / ${toTemp(w.daily.temperature_2m_max[i])}</b></div>`;
     }
 
     const rain24=w.hourly.precipitation.slice(0,24).reduce((a,b)=>a+b,0);
@@ -245,6 +242,10 @@ async function load(lat, lon, name){
 
 // GEOLOCATION
 function useMyLocation(){
+  if(!navigator.geolocation){
+    load(22.57,88.36,"Kolkata");
+    return;
+  }
   navigator.geolocation.getCurrentPosition(
     p=>load(p.coords.latitude,p.coords.longitude,"My Location"),
     ()=>load(22.57,88.36,"Kolkata")
@@ -285,8 +286,17 @@ window.addEventListener('beforeinstallprompt', (e)=>{
   };
 });
 
-// INITIALIZE
-useMyLocation();
+// INITIALIZE LOCATION ON FIRST USER INTERACTION
+function initLocationOnce() {
+  function handler() {
+    useMyLocation();
+    window.removeEventListener('click', handler);
+    window.removeEventListener('touchstart', handler);
+  }
+  window.addEventListener('click', handler);
+  window.addEventListener('touchstart', handler);
+}
+initLocationOnce();
 </script>
 </body>
 </html>
