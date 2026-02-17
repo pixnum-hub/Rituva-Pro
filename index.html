@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rituva Weather</title>
+<title>Rituva Pro</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#000000">
 <style>
@@ -162,11 +162,14 @@ function applyData({w,a}){
   updateTimestamp()
 }
 
-async function load(lat,lon,name){
+async function load(lat, lon, name){
   $("city").innerText=name
   try{
-    const w=await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`).then(r=>r.json())
-    const a=await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`).then(r=>r.json())
+    const wRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,precipitation&daily=temperature_2m_min,temperature_2m_max,time,sunrise,sunset&timezone=auto`)
+    const aRes = await fetch(`https://air-quality-api.open-meteo.com/v1/air-quality?latitude=${lat}&longitude=${lon}&hourly=pm2_5`)
+    if(!wRes.ok||!aRes.ok) throw new Error("Offline")
+    const w = await wRes.json()
+    const a = await aRes.json()
     applyData({w,a})
   }catch{
     $("temp").innerText="Offline"
@@ -181,19 +184,15 @@ function useMyLocation(){
 }
 
 async function searchCity(){
-  if(!search.value)return
-  const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json())
+  if(!search.value) return
+  const g = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json())
   if(g.results) load(g.results[0].latitude,g.results[0].longitude,g.results[0].name)
 }
 
-document.getElementById("year").innerText=new Date().getFullYear()
+document.getElementById("year").innerText = new Date().getFullYear()
 
-if ('serviceWorker' in navigator){
-  window.addEventListener('load',()=>{
-    navigator.serviceWorker.register('./sw.js')
-      .then(()=>console.log('SW registered'))
-      .catch(e=>console.log('SW failed',e))
-  })
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js'))
 }
 
 useMyLocation()
