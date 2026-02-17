@@ -1,42 +1,35 @@
-const CACHE_NAME = 'rituva-cache-v1';
-const urlsToCache = [
-  './',
-  './index.html',
-  './manifest.json',
-  './sw.js',
-  './icons/icon-192.png',
-  './icons/icon-512.png',
-  // Add any CSS/JS you use
+const CACHE_NAME = "rituva-v1";
+
+// List of files to cache for offline
+const ASSETS = [
+  "./",
+  "./index.html",
+  "./manifest.json",
+  "./icon-192.png",
+  "./icon-512.png"
 ];
 
-// Install event: cache app shell
-self.addEventListener('install', event => {
+// Install: cache all assets
+self.addEventListener("install", event => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then(cache => {
-      return cache.addAll(urlsToCache);
-    })
+    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
   );
+  self.skipWaiting();
 });
 
-// Activate event: clean old caches
-self.addEventListener('activate', event => {
+// Activate: remove old caches
+self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
-      Promise.all(
-        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
-      )
+      Promise.all(keys.map(key => key !== CACHE_NAME && caches.delete(key)))
     )
   );
+  self.clients.claim();
 });
 
-// Fetch event: serve cached resources, fallback to network
-self.addEventListener('fetch', event => {
+// Fetch: serve cached content first
+self.addEventListener("fetch", event => {
   event.respondWith(
-    caches.match(event.request).then(response => {
-      return response || fetch(event.request).catch(() => {
-        // Optional fallback
-        if (event.request.destination === 'document') return caches.match('./index.html');
-      });
-    })
+    caches.match(event.request).then(resp => resp || fetch(event.request))
   );
 });
