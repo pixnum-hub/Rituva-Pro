@@ -1,6 +1,4 @@
 const CACHE_NAME = "rituva-v1";
-
-// List of files to cache for offline
 const ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +7,6 @@ const ASSETS = [
   "./icon-512.png"
 ];
 
-// Install: cache all assets
 self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
@@ -17,7 +14,6 @@ self.addEventListener("install", event => {
   self.skipWaiting();
 });
 
-// Activate: remove old caches
 self.addEventListener("activate", event => {
   event.waitUntil(
     caches.keys().then(keys =>
@@ -27,9 +23,14 @@ self.addEventListener("activate", event => {
   self.clients.claim();
 });
 
-// Fetch: serve cached content first
 self.addEventListener("fetch", event => {
-  event.respondWith(
-    caches.match(event.request).then(resp => resp || fetch(event.request))
-  );
+  if (event.request.url.startsWith(self.location.origin)) {
+    event.respondWith(
+      caches.match(event.request).then(resp => resp || fetch(event.request))
+    );
+  } else {
+    event.respondWith(
+      fetch(event.request).catch(() => new Response(null,{status:503,statusText:"Offline"}))
+    );
+  }
 });
