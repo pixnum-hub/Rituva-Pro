@@ -3,22 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rituva Weather Pro</title>
-
-<!-- PWA Manifest & Theme -->
+<title>Rituva Weather</title>
 <link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#000000">
-
 <style>
-:root{
---bg:#000;--card:#1a1a1a;--soft:#222;--text:#fff;--muted:#9a9a9a;--radius:26px;
-}
-.light{
---bg:#f4f6f8;--card:#fff;--soft:#e8eaed;--text:#111;--muted:#666;
-}
-.oled{
---bg:#000;--card:#000;--soft:#000;--text:#fff;--muted:#777;
-}
+:root{--bg:#000;--card:#1a1a1a;--soft:#222;--text:#fff;--muted:#9a9a9a;--radius:26px;}
+.light{--bg:#f4f6f8;--card:#fff;--soft:#e8eaed;--text:#111;--muted:#666;}
+.oled{--bg:#000;--card:#000;--soft:#000;--text:#fff;--muted:#777;}
 *{box-sizing:border-box;}
 body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,system-ui;transition:0.3s ease;}
 .app{max-width:430px;margin:auto;padding:18px;}
@@ -39,23 +30,17 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <body>
 <div class="app">
 <h1>🌦️ Rituva Pro</h1>
-
-<!-- THEME AND UNIT TOGGLES -->
 <button onclick="toggleTheme()">🌗 Theme: <span id="themeLabel">Dark</span></button>
 <button onclick="toggleUnit()">🌡 °C / °F</button>
-
-<!-- SEARCH -->
 <input id="search" placeholder="Search city" onkeydown="if(event.key==='Enter')searchCity()">
 <button onclick="searchCity()">Search</button>
 <button onclick="useMyLocation()">📍 Use My Location</button>
 
-<!-- MAIN TEMP -->
 <div class="hero">
 <small id="city">Loading...</small>
 <b id="temp">--°C</b>
 </div>
 
-<!-- TEMPERATURE -->
 <h2>🌡 Temperature</h2>
 <div class="grid">
 <div class="card"><small>Today Min</small><b id="tmin">--</b></div>
@@ -66,11 +51,9 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>7-Day Max</small><b id="t7max">--</b></div>
 </div>
 
-<!-- 7-DAY FORECAST -->
 <h2>📅 7-Day Forecast</h2>
 <div id="forecast7" class="grid"></div>
 
-<!-- RAIN & MONSOON -->
 <h2>🌧 Rain & Monsoon</h2>
 <div class="grid">
 <div class="card"><small>Hourly Rain</small><b id="rain">--</b></div>
@@ -81,12 +64,10 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>Cyclone Alert</small><b id="cyclone">--</b></div>
 </div>
 
-<!-- AIR QUALITY -->
 <h2>🌬 Air Quality</h2>
 <div class="grid">
 <div class="card full">
-<small>AQI (US EPA)</small>
-<b id="aqiValue">--</b>
+<small>AQI (US EPA)</small><b id="aqiValue">--</b>
 <small id="aqiCategory"></small>
 </div>
 <div class="card"><small>Children</small><b id="child">--</b></div>
@@ -94,7 +75,6 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card"><small>Asthma</small><b id="asthma">--</b></div>
 </div>
 
-<!-- HEAT • NIGHT • POWER -->
 <h2>🔥 Heat • Night • Power</h2>
 <div class="grid">
 <div class="card"><small>Heatwave</small><b id="heat">--</b></div>
@@ -102,86 +82,44 @@ footer{text-align:center;color:var(--muted);font-size:14px;margin:40px 0 10px;}
 <div class="card full"><small>Power Demand</small><b id="power">--</b></div>
 </div>
 
-<!-- SUN -->
 <h2>🌅 Sun</h2>
-<div class="grid">
-<div class="card full"><small>Sunrise / Sunset</small><b id="sun">--</b></div>
-</div>
+<div class="grid"><div class="card full"><small>Sunrise / Sunset</small><b id="sun">--</b></div></div>
 
-<!-- LIFESTYLE ADVICE -->
 <h2>🧘 Lifestyle Advice</h2>
-<div class="grid">
-<div class="card full">
-<small>Tips</small>
-<b id="lifestyle">--</b>
-</div>
-</div>
+<div class="grid"><div class="card full"><small>Tips</small><b id="lifestyle">--</b></div></div>
 
-<!-- SMART AC ADVICE -->
 <h2>❄ Smart AC Advice</h2>
-<div class="grid">
-<div class="card full">
-<small>AC Recommendations</small>
-<b id="acAdvice">--</b>
-</div>
-</div>
+<div class="grid"><div class="card full"><small>AC Recommendations</small><b id="acAdvice">--</b></div></div>
 
-<!-- DATA STATUS -->
 <h2>ℹ️ Data Status</h2>
-<div class="grid">
-<div class="card full"><small>Last Updated</small><b id="updated">--</b></div>
-</div>
+<div class="grid"><div class="card full"><small>Last Updated</small><b id="updated">--</b></div></div>
 
 <footer>© Manik Roy <span id="year"></span>. All Rights Reserved.</footer>
 </div>
 
 <script>
-const $ = id => document.getElementById(id)
-let UNIT = localStorage.unit || "C"
-let THEME = localStorage.theme || "dark"
-let lastData = null
+const $=id=>document.getElementById(id)
+let UNIT=localStorage.unit||"C", THEME=localStorage.theme||"dark", lastData=null
 
-// THEME TOGGLE
 function applyTheme(){
   document.body.classList.remove("light","oled")
-  if(THEME==="light") document.body.classList.add("light")
-  if(THEME==="oled") document.body.classList.add("oled")
-  $("themeLabel").innerText = THEME.charAt(0).toUpperCase() + THEME.slice(1)
-  localStorage.theme = THEME
+  if(THEME==="light")document.body.classList.add("light")
+  if(THEME==="oled")document.body.classList.add("oled")
+  $("themeLabel").innerText=THEME.charAt(0).toUpperCase()+THEME.slice(1)
+  localStorage.theme=THEME
 }
 applyTheme()
-function toggleTheme(){
-  if(THEME==="dark") THEME="light"
-  else if(THEME==="light") THEME="oled"
-  else THEME="dark"
-  applyTheme()
-}
-
-// UNIT TOGGLE
-function toTemp(c){return UNIT==="C"? `${c.toFixed(1)}°C` : `${((c*9/5)+32).toFixed(1)}°F`}
-function toggleUnit(){UNIT=UNIT==="C"?"F":"C";localStorage.unit=UNIT;if(lastData) applyData(lastData)}
-
-// TIMESTAMP
+function toggleTheme(){THEME=THEME==="dark"?"light":THEME==="light"?"oled":"dark";applyTheme()}
+function toTemp(c){return UNIT==="C"? `${c.toFixed(1)}°C`:`${((c*9/5)+32).toFixed(1)}°F`}
+function toggleUnit(){UNIT=UNIT==="C"?"F":"C";localStorage.unit=UNIT;if(lastData)applyData(lastData)}
 function updateTimestamp(){ $("updated").innerText=new Date().toLocaleString() }
 
-// AQI CALCULATION
 function calculateUSAQI(pm){
-  const b=[
-    {cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},
-    {cL:12.1,cH:35.4,iL:51,iH:100,cat:"Moderate",col:"#FFFF00"},
-    {cL:35.5,cH:55.4,iL:101,iH:150,cat:"Unhealthy for Sensitive Groups",col:"#FF7E00"},
-    {cL:55.5,cH:150.4,iL:151,iH:200,cat:"Unhealthy",col:"#FF0000"},
-    {cL:150.5,cH:250.4,iL:201,iH:300,cat:"Very Unhealthy",col:"#8F3F97"},
-    {cL:250.5,cH:500.4,iL:301,iH:500,cat:"Hazardous",col:"#7E0023"}
-  ]
-  for(let x of b) if(pm>=x.cL&&pm<=x.cH){
-    const aqi=((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL
-    return {v:Math.round(aqi),cat:x.cat,col:x.col}
-  }
+  const b=[{cL:0,cH:12,iL:0,iH:50,cat:"Good",col:"#00E400"},{cL:12.1,cH:35.4,iL:51,iH:100,cat:"Moderate",col:"#FFFF00"},{cL:35.5,cH:55.4,iL:101,iH:150,cat:"Unhealthy for Sensitive Groups",col:"#FF7E00"},{cL:55.5,cH:150.4,iL:151,iH:200,cat:"Unhealthy",col:"#FF0000"},{cL:150.5,cH:250.4,iL:201,iH:300,cat:"Very Unhealthy",col:"#8F3F97"},{cL:250.5,cH:500.4,iL:301,iH:500,cat:"Hazardous",col:"#7E0023"}]
+  for(let x of b) if(pm>=x.cL&&pm<=x.cH){const aqi=((x.iH-x.iL)/(x.cH-x.cL))*(pm-x.cL)+x.iL;return {v:Math.round(aqi),cat:x.cat,col:x.col}}
   return {v:500,cat:"Hazardous",col:"#7E0023"}
 }
 
-// APPLY DATA
 function applyData({w,a}){
   lastData={w,a}
   const t=w.hourly.temperature_2m[0]
@@ -224,7 +162,6 @@ function applyData({w,a}){
   updateTimestamp()
 }
 
-// LOAD DATA
 async function load(lat,lon,name){
   $("city").innerText=name
   try{
@@ -244,24 +181,21 @@ function useMyLocation(){
 }
 
 async function searchCity(){
-  if(!search.value) return
+  if(!search.value)return
   const g=await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${search.value}&count=1`).then(r=>r.json())
   if(g.results) load(g.results[0].latitude,g.results[0].longitude,g.results[0].name)
 }
 
-// FOOTER YEAR
-document.getElementById("year").innerText = new Date().getFullYear()
+document.getElementById("year").innerText=new Date().getFullYear()
 
-// REGISTER SERVICE WORKER
 if ('serviceWorker' in navigator){
-  window.addEventListener('load', ()=>{
+  window.addEventListener('load',()=>{
     navigator.serviceWorker.register('./sw.js')
       .then(()=>console.log('SW registered'))
       .catch(e=>console.log('SW failed',e))
   })
 }
 
-// INITIALIZE
 useMyLocation()
 </script>
 </body>
