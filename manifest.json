@@ -1,12 +1,12 @@
 {
   "name": "Rituva Weather",
   "short_name": "Rituva",
-  "description": "Weather app with AQI, 7-day forecast, and lifestyle advice",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#000000",
-  "orientation": "portrait-primary",
+  "description": "Indicative weather, AQI, lifestyle and AC advice for India.",
+  "orientation": "portrait",
   "icons": [
     {
       "src": "icons/icon-192.png",
